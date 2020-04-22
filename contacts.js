@@ -6,7 +6,7 @@ const contactsPath = path.join(__dirname, "./db/contacts.json");
 function listContacts() {
   fs.readFile(contactsPath, "utf8", (err, data) => {
     if (err) throw err;
-    console.log(data);
+    console.table(JSON.parse(data));
   });
 }
 
@@ -17,7 +17,7 @@ function getContactById(contactId) {
     const filterContactsById = JSON.parse(data).filter(
       (data) => contactId === data.id
     );
-    return console.log(filterContactsById);
+    return console.table(filterContactsById);
   });
 }
 
@@ -25,14 +25,14 @@ function removeContact(contactId) {
   fs.readFile(contactsPath, "utf8", (err, data) => {
     if (err) throw err;
 
-    const filterContactsById = JSON.parse(data).filter(
+    const removeContacts = JSON.parse(data).filter(
       (data) => contactId !== data.id
     );
-    return console.log(filterContactsById);
+    return console.table(removeContacts);
   });
 }
 
-function addContact({ name, email, phone }) {
+function addContact(name, email, phone) {
   fs.readFile(contactsPath, "utf8", (err, data) => {
     if (err) throw err;
 
@@ -41,9 +41,9 @@ function addContact({ name, email, phone }) {
       email,
       phone,
     };
-    const arrayContact = JSON.parse(data);
-    arrayContact.push(newContact);
-    return console.log(arrayContact);
+    const addContact = JSON.parse(data);
+    addContact.push(newContact);
+    return console.table(addContact);
   });
 }
 
