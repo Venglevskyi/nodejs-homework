@@ -25,4 +25,25 @@ function invokeAction({ action, id, name, email, phone }) {
   }
 }
 
-invokeAction(argv);
+// invokeAction(argv);
+
+server.get("/", (req, res, next) => {
+  return res.status(200).send({ hello: "world" });
+});
+
+function addAllowOriginHeader(req, res, next) {
+  res.set("Access-Control-Allow-Origin", "http://localhost:3000");
+}
+
+function addCorsHeaders(req, res, next) {
+  res.set(
+    "Access-Control-Allow-Method",
+    req.headers["access-control-request-method"]
+  );
+  res.set(
+    "Access-Control-Allow-Headers",
+    req.headers["access-control-request-headers"]
+  );
+
+  res.status(200).send();
+}
