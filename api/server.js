@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT;
-console.log(port);
 
 const contactsRouter = require("./contacts/routers");
 
@@ -29,12 +28,12 @@ module.exports = class ContactsServer {
   }
 
   initRoutes() {
-    this.server.use("/contacts", contactsRouter);
+    this.server.use("/api/contacts", contactsRouter);
   }
 
   startListening() {
-    this.server.listen(port, () =>
-      console.log("Started listening on port", port)
-    );
+    this.server.listen(port, () => {
+      console.log("Started listening on port", port);
+    });
   }
 };
