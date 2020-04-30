@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const { v4: uuidv4 } = require("uuid");
 const contacts = require("../../db/contacts.json");
+const NotFoundError = require("./error");
 
 class ContactsOperations {
   listContacts(req, res, next) {
@@ -14,13 +15,7 @@ class ContactsOperations {
   getById(req, res, next) {
     try {
       const { id } = req.params;
-      const findContact = this.contactFound(id);
-
-      // if (!contactFound) {
-      //   res.status(404).json({ message: "Not found" });
-      //   return;
-      // }
-
+      const findContact = this.contactFound(res, id);
       return res.status(200).json(findContact);
     } catch (err) {
       next(err);
@@ -40,12 +35,8 @@ class ContactsOperations {
   removeContact(req, res, next) {
     try {
       const { id } = req.params;
-      const findContact = this.contactFound(id);
-      if (!findContact) {
-        res.status(404).json({ message: "Not found" });
-        return;
-      }
-      return res.status(200).json({ message: "contact deleted" });
+      const findContact = this.contactFound(res, id);
+      return res.status(200).send({ message: "contact deleted" });
     } catch (err) {
       next(err);
     }
@@ -54,11 +45,7 @@ class ContactsOperations {
   updateContact(req, res, next) {
     try {
       const { id } = req.params;
-      const findContact = this.contactFound(id);
-      if (!findContact) {
-        res.status(404).json({ message: "Not found" });
-        return;
-      }
+      const findContact = this.contactFound(res, id);
       const updateContact = {
         ...findContact,
         ...req.body,
@@ -83,10 +70,13 @@ class ContactsOperations {
     next();
   }
 
-  contactFound(contactId) {
+  contactFound(res, contactId) {
     const findContact = contacts.find(
       (contact) => contact.id === Number(contactId)
     );
+    if (!findContact) {
+      throw new NotFoundError("User not found");
+    }
     return findContact;
   }
 }

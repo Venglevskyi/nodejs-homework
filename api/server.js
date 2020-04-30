@@ -15,7 +15,6 @@ module.exports = class ContactsServer {
     this.initMiddlewares();
     this.initRoutes();
     this.startListening();
-    // this.handleErrors();
   }
 
   initServer() {
