@@ -1,56 +1,53 @@
 const Joi = require("joi");
-const { v4: uuidv4 } = require("uuid");
-const contacts = require("../../db/contacts.json");
+const ContactModel = require("./model");
 const NotFoundError = require("./error");
 
 class ContactsOperations {
-  listContacts(req, res, next) {
+  async listContacts(req, res, next) {
     try {
-      return res.status(200).json(contacts);
+      const allContacts = await ContactModel.getAllContacts();
+      return res.status(200).json(allContacts);
     } catch (err) {
       next(err);
     }
   }
 
-  getById(req, res, next) {
+  async getById(req, res, next) {
     try {
       const { id } = req.params;
-      const findContact = this.contactFound(res, id);
+      const findContact = await this.contactFound(id);
       return res.status(200).json(findContact);
     } catch (err) {
       next(err);
     }
   }
 
-  addContact(req, res, next) {
+  async addContact(req, res, next) {
     try {
-      const newContact = { ...req.body, id: uuidv4() };
-      contacts.push(newContact);
-      return res.status(201).json(contacts);
+      const newContact = await ContactModel.addContactOnDb(req.body);
+      return res.status(201).json(newContact);
     } catch (err) {
       next(err);
     }
   }
 
-  removeContact(req, res, next) {
+  async removeContact(req, res, next) {
     try {
       const { id } = req.params;
-      const findContact = this.contactFound(res, id);
+      await this.contactFound(id);
+      await ContactModel.removeContactById(id);
       return res.status(200).send({ message: "contact deleted" });
     } catch (err) {
       next(err);
     }
   }
 
-  updateContact(req, res, next) {
+  async updateContact(req, res, next) {
     try {
       const { id } = req.params;
-      const findContact = this.contactFound(res, id);
-      const updateContact = {
-        ...findContact,
-        ...req.body,
-      };
-      res.status(200).json(updateContact);
+      await this.contactFound(id);
+      const updatedContact = await ContactModel.updateContactById(id, req.body);
+      res.status(200).json(updatedContact.value);
     } catch (err) {
       next(err);
     }
@@ -70,10 +67,8 @@ class ContactsOperations {
     next();
   }
 
-  contactFound(res, contactId) {
-    const findContact = contacts.find(
-      (contact) => contact.id === Number(contactId)
-    );
+  async contactFound(res, contactId) {
+    const findContact = await ContactModel.getContactById(contactId);
     if (!findContact) {
       throw new NotFoundError("User not found");
     }
