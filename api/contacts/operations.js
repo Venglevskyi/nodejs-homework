@@ -67,7 +67,7 @@ class ContactsOperations {
     next();
   }
 
-  async contactFound(res, contactId) {
+  async contactFound(contactId) {
     const findContact = await ContactModel.getContactById(contactId);
     if (!findContact) {
       throw new NotFoundError("User not found");

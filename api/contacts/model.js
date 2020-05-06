@@ -1,70 +1,57 @@
-const { MongoClient, ObjectId } = require("mongodb");
-require("dotenv").config();
-const MongoDB_URL = process.env.MONGODB_URL;
-const DB_NAME = process.env.DB_NAME;
+const mongoose = require("mongoose");
+const {
+  Schema,
+  Types: { ObjectId },
+} = mongoose;
 
-class ContactModel {
-  constructor() {
-    this.contacts = null;
-  }
+const contactSchema = new Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  phone: { type: String, required: true },
+});
 
-  async getAllContacts() {
-    await this.getContactsCollection();
-    return this.contacts.find().toArray();
-  }
+contactSchema.statics.getAllContacts = getAllContacts;
+contactSchema.statics.addContactOnDb = addContactOnDb;
+contactSchema.statics.getContactById = getContactById;
+contactSchema.statics.updateContactById = updateContactById;
+contactSchema.statics.removeContactById = removeContactById;
 
-  async addContactOnDb(contactData) {
-    await this.getContactsCollection();
-    const searchId = await this.contacts.insertOne(contactData);
-
-    return this.contacts.findOne({ _id: new ObjectId(searchId.insertedId) });
-  }
-
-  async getContactById(contactId) {
-    await this.getContactsCollection();
-    if (!ObjectId.isValid(contactId)) {
-      return null;
-    }
-
-    console.log("id", id);
-
-    return this.contacts.findOne({ _id: new ObjectId(contactId) });
-  }
-
-  async updateContactById(contactId, contactData) {
-    await this.getContactsCollection();
-    if (!ObjectId.isValid(contactId)) {
-      return null;
-    }
-
-    return this.contacts.findOneAndUpdate(
-      { _id: new ObjectId(contactId) },
-      { $set: contactData },
-      { new: true }
-    );
-  }
-
-  async removeContactById(contactId) {
-    await this.getContactsCollection();
-    if (!ObjectId.isValid(contactId)) {
-      return null;
-    }
-
-    return this.contacts.deleteOne({ _id: new ObjectId(contactId) });
-  }
-
-  async getContactsCollection() {
-    if (this.contacts) {
-      return;
-    }
-
-    const client = await MongoClient.connect(MongoDB_URL, {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-    });
-    const db = client.db(DB_NAME);
-    this.contacts = await db.createCollection("contacts");
-  }
+async function getAllContacts() {
+  return this.find();
 }
 
-module.exports = new ContactModel();
+async function addContactOnDb(contactParams) {
+  return this.create(contactParams);
+}
+
+async function getContactById(contactId) {
+  if (!ObjectId.isValid(contactId)) {
+    return null;
+  }
+
+  return this.findById(contactId);
+}
+
+async function updateContactById(contactId, contactParams) {
+  if (!ObjectId.isValid(contactId)) {
+    return null;
+  }
+
+  return this.findByIdAndUpdate(
+    contactId,
+    { $set: contactParams },
+    { new: true }
+  );
+}
+
+async function removeContactById(contactId) {
+  if (!ObjectId.isValid(contactId)) {
+    return null;
+  }
+
+  return this.findByIdAndDelete(contactId);
+}
+
+const contactModel = mongoose.model("contact", contactSchema);
+
+module.exports = contactModel;
