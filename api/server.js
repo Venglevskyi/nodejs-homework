@@ -17,9 +17,9 @@ module.exports = class ContactsServer {
   async start() {
     this.initServer();
     this.initMiddlewares();
+    await this.initDatabase();
     this.initRoutes();
     this.handleErrors();
-    await this.initDatabase();
     this.startListening();
   }
 
@@ -31,17 +31,6 @@ module.exports = class ContactsServer {
     this.server.use(express.json());
     this.server.use(cors({ origin: "http://localhost:3000" }));
     this.server.use(morgan("tiny"));
-  }
-
-  initRoutes() {
-    this.server.use("/api/contacts", contactsRouter);
-  }
-
-  handleErrors() {
-    this.server.use((err, req, res, next) => {
-      delete err.stack;
-      return res.status(err.status).send(`${err.name}: ${err.message}`);
-    });
   }
 
   async initDatabase() {
@@ -57,6 +46,17 @@ module.exports = class ContactsServer {
       console.log("MongoDB connection error", err);
       process.exit(1);
     }
+  }
+
+  initRoutes() {
+    this.server.use("/api/contacts", contactsRouter);
+  }
+
+  handleErrors() {
+    this.server.use((err, req, res, next) => {
+      delete err.stack;
+      return res.status(err.status).send(`${err.name}: ${err.message}`);
+    });
   }
 
   startListening() {
