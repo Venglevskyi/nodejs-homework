@@ -1,6 +1,6 @@
 const Joi = require("joi");
 const ContactModel = require("./model");
-const NotFoundError = require("./error");
+const NotFoundError = require("../helpers/errors.constructors");
 
 class ContactsOperations {
   async listContacts(req, res, next) {

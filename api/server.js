@@ -8,6 +8,7 @@ const port = process.env.PORT;
 const MongoDB_URL = process.env.MONGODB_URL;
 
 const contactsRouter = require("./contacts/routers");
+const { authRouter, userRouter } = require("./auth/routers");
 
 module.exports = class ContactsServer {
   constructor() {
@@ -50,6 +51,8 @@ module.exports = class ContactsServer {
 
   initRoutes() {
     this.server.use("/api/contacts", contactsRouter);
+    this.server.use("/auth", authRouter);
+    this.server.use("/users", userRouter);
   }
 
   handleErrors() {
