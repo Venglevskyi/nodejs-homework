@@ -1,4 +1,4 @@
-const Joi = require("joi");
+const Joi = require("@hapi/joi");
 const ContactModel = require("./model");
 const NotFoundError = require("../helpers/errors.constructors");
 
@@ -7,6 +7,30 @@ class ContactsOperations {
     try {
       const allContacts = await ContactModel.getAllContacts();
       return res.status(200).json(allContacts);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getContactsWithPagination(req, res, next) {
+    try {
+      const { page, limit } = req.query;
+      const contactsWithQuery = await ContactModel.paginate(
+        {},
+        { page, limit }
+      );
+      return res.status(200).json(contactsWithQuery.docs);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getContactsBySubscription(req, res, next) {
+    try {
+      const findUserBySub = await ContactModel.findContactsBySubscription(
+        req.query.sub
+      );
+      return res.status(200).json(findUserBySub);
     } catch (err) {
       next(err);
     }
@@ -58,9 +82,10 @@ class ContactsOperations {
       name: Joi.string().required(),
       email: Joi.string().required(),
       phone: Joi.string().required(),
+      subscription: Joi.string(),
     });
 
-    const result = Joi.validate(req.body, contactRules);
+    const result = contactRules.validate(req.body);
     if (result.error) {
       return res.status(400).json({ message: "missing required name field" });
     }

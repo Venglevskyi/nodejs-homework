@@ -1,7 +1,6 @@
 const { Router } = require("express");
 
 const authRouter = Router();
-const userRouter = Router();
 const authOperations = require("./operations");
 
 authRouter.post(
@@ -19,10 +18,5 @@ authRouter.post(
   authOperations.authorize,
   authOperations.logOut.bind(authOperations)
 );
-userRouter.get(
-  "/current",
-  authOperations.authorize,
-  authOperations.getCurrentUser.bind(authOperations)
-);
 
-module.exports = { authRouter, userRouter };
+module.exports = authRouter;

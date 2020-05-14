@@ -2,6 +2,7 @@ const { Router } = require("express");
 const ContactsOperations = require("./operations");
 
 const contactsRouter = Router();
+const contactsRouterByQuery = Router();
 
 contactsRouter.get(
   "/",
@@ -22,5 +23,9 @@ contactsRouter.patch(
   ContactsOperations.validateContact,
   ContactsOperations.updateContact.bind(ContactsOperations)
 );
+contactsRouterByQuery.get(
+  "/",
+  ContactsOperations.getContactsBySubscription.bind(ContactsOperations)
+);
 
-module.exports = contactsRouter;
+module.exports = { contactsRouter, contactsRouterByQuery };

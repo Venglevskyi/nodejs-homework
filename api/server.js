@@ -7,10 +7,11 @@ require("dotenv").config();
 const port = process.env.PORT;
 const MongoDB_URL = process.env.MONGODB_URL;
 
-const contactsRouter = require("./contacts/routers");
-const { authRouter, userRouter } = require("./auth/routers");
+const { contactsRouter, contactsRouterByQuery } = require("./contacts/routers");
+const authRouter = require("./auth/routers");
+const userRouter = require("./users/routers");
 
-module.exports = class ContactsServer {
+module.exports = class Server {
   constructor() {
     this.server = null;
   }
@@ -53,6 +54,7 @@ module.exports = class ContactsServer {
     this.server.use("/api/contacts", contactsRouter);
     this.server.use("/auth", authRouter);
     this.server.use("/users", userRouter);
+    this.server.use("/contacts", contactsRouterByQuery);
   }
 
   handleErrors() {

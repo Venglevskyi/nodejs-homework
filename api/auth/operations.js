@@ -1,4 +1,4 @@
-const Joi = require("joi");
+const Joi = require("@hapi/joi");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -76,19 +76,6 @@ class authOperations {
     }
   }
 
-  async getCurrentUser(req, res, next) {
-    try {
-      const { _id } = req.user;
-      const currentUser = await userModel.getUserById(_id);
-      if (!currentUser) {
-        throw new UnauthorizedError("Not authorized");
-      }
-      return res.status(200).json(this.composeUserForResponse(currentUser));
-    } catch (err) {
-      next(err);
-    }
-  }
-
   async authorize(req, res, next) {
     try {
       const authorizationHeader = req.get("Authorization");
@@ -121,7 +108,7 @@ class authOperations {
       subscription: Joi.string(),
     });
 
-    const result = Joi.validate(req.body, userRules);
+    const result = userRules.validate(req.body);
     if (result.error) {
       return res.status(422).json({ message: "Missing required fields" });
     }
@@ -134,7 +121,7 @@ class authOperations {
       password: Joi.string().required(),
     });
 
-    const result = Joi.validate(req.body, userRules);
+    const result = userRules.validate(req.body);
     if (result.error) {
       return res.status(422).json({ message: "Missing required fields" });
     }
