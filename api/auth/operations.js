@@ -1,6 +1,11 @@
 const Joi = require("@hapi/joi");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const imagemin = require("imagemin");
+const imageminJpegtran = require("imagemin-jpegtran");
+const imageminPngquant = require("imagemin-pngquant");
+// const toonavatar = require("cartoon-avatar");
+const fsPromises = require("fs").promises;
 require("dotenv").config();
 
 const userModel = require("../users/model");
@@ -15,6 +20,7 @@ class authOperations {
 
   async registerUser(req, res, next) {
     try {
+      const { SERVER_DOMEN, IMAGE_BASE_URL } = process.env;
       const { email, password, subscription } = req.body;
       const existingUser = await userModel.findUserByEmail(email);
       if (existingUser) {
@@ -22,15 +28,20 @@ class authOperations {
       }
 
       const passwordHash = await this.hashPassword(password);
+      const imageUrl = `${SERVER_DOMEN}/${IMAGE_BASE_URL}/${req.file.filename}`;
+
       const createdUser = await userModel.createUser({
         email,
         passwordHash,
+        avatarURL: imageUrl,
         subscription,
       });
 
+      const token = this.createToken(createdUser._id);
+
       return res
         .status(201)
-        .json({ user: this.composeUserForResponse(createdUser) });
+        .json({ token, user: this.composeUserForResponse(createdUser) });
     } catch (err) {
       next(err);
     }
@@ -108,6 +119,11 @@ class authOperations {
       subscription: Joi.string(),
     });
 
+    const hasAvatarImage = req.file && req.file.fieldname === "avatarURL";
+    if (!hasAvatarImage) {
+      return res.status(422).json({ message: "Missing required fields" });
+    }
+
     const result = userRules.validate(req.body);
     if (result.error) {
       return res.status(422).json({ message: "Missing required fields" });
@@ -145,6 +161,28 @@ class authOperations {
       email: user.email,
       subscription: user.subscription,
     };
+  }
+
+  async compresedImageAvatar(req, res, next) {
+    try {
+      const pathBeforeCompresed = `${req.file.destination}/${req.file.filename}`;
+
+      await imagemin([pathBeforeCompresed], {
+        destination: "api/public/images",
+        plugins: [
+          imageminJpegtran(),
+          imageminPngquant({
+            quality: [0.6, 0.8],
+          }),
+        ],
+      });
+
+      req.file.path = `${"api/public/images"}/${req.file.filename}`;
+      await fsPromises.unlink(pathBeforeCompresed);
+      next();
+    } catch (err) {
+      next();
+    }
   }
 }
 

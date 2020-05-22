@@ -2,9 +2,12 @@ const { Router } = require("express");
 
 const authRouter = Router();
 const authOperations = require("./operations");
+const upload = require("./multerStorage");
 
 authRouter.post(
   "/register",
+  upload.single("avatarURL"),
+  authOperations.compresedImageAvatar,
   authOperations.validateRegisterUser,
   authOperations.registerUser.bind(authOperations)
 );

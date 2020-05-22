@@ -7,6 +7,7 @@ const {
 const userSchema = new Schema({
   email: String,
   passwordHash: String,
+  avatarURL: String,
   subscription: {
     type: String,
     enum: ["free", "pro", "premium"],
@@ -19,7 +20,7 @@ userSchema.statics.createUser = createUser;
 userSchema.statics.findUserByEmail = findUserByEmail;
 userSchema.statics.getUserById = getUserById;
 userSchema.statics.updateUserById = updateUserById;
-userSchema.statics.updateUserSubscription = updateUserSubscription;
+userSchema.statics.updateUserParams = updateUserParams;
 
 async function createUser(userParams) {
   return this.create(userParams);
@@ -44,14 +45,14 @@ async function updateUserById(id, token) {
   return this.findByIdAndUpdate(id, { $set: token }, { new: true });
 }
 
-async function updateUserSubscription(contactId, contactParams) {
+async function updateUserParams(contactId, userParams) {
   if (!ObjectId.isValid(contactId)) {
     return null;
   }
 
   return this.findByIdAndUpdate(
     contactId,
-    { $set: contactParams },
+    { $set: { avatarURL: userParams } },
     { new: true }
   );
 }

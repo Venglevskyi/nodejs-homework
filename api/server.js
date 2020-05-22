@@ -31,6 +31,7 @@ module.exports = class Server {
 
   initMiddlewares() {
     this.server.use(express.json());
+    this.server.use(express.static("api/public"));
     this.server.use(cors({ origin: "http://localhost:3000" }));
     this.server.use(morgan("tiny"));
   }
