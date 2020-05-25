@@ -7,15 +7,17 @@ const imageminPngquant = require("imagemin-pngquant");
 // const toonavatar = require("cartoon-avatar");
 const fsPromises = require("fs").promises;
 require("dotenv").config();
+const sgMail = require("@sendgrid/mail");
 
 const userModel = require("../users/model");
 const ExistingEmailError = require("../helpers/errors.constructors");
 const UnauthorizedError = require("../helpers/errors.constructors");
-const JWT_SECRET = process.env.JWT_SECRET;
+const NotFoundError = require("../helpers/errors.constructors");
 
 class authOperations {
   constructor() {
     this.saltRounds = 4;
+    sgMail.setApiKey(process.env.SENDGRID_API_TOKEN);
   }
 
   async registerUser(req, res, next) {
@@ -38,6 +40,8 @@ class authOperations {
       });
 
       const token = this.createToken(createdUser._id);
+
+      this.sendVerificationToken(createdUser);
 
       return res
         .status(201)
@@ -89,6 +93,7 @@ class authOperations {
 
   async authorize(req, res, next) {
     try {
+      const { JWT_SECRET } = process.env;
       const authorizationHeader = req.get("Authorization");
       const token = authorizationHeader.replace("Bearer ", "");
       let getIdFromToken;
@@ -107,6 +112,24 @@ class authOperations {
       req.token = token;
 
       next();
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async verifyUser(req, res, next) {
+    try {
+      const { verificationToken } = req.params;
+      const wasUserVerified = await userModel.findByVerificationToken(
+        verificationToken
+      );
+      if (!wasUserVerified) {
+        throw new NotFoundError("User not found");
+      }
+
+      await userModel.userVerified(verificationToken);
+
+      return res.status(200).send("User verified");
     } catch (err) {
       next(err);
     }
@@ -153,7 +176,20 @@ class authOperations {
   }
 
   createToken(uid) {
+    const { JWT_SECRET } = process.env;
     return jwt.sign({ uid }, JWT_SECRET);
+  }
+
+  async sendVerificationToken(user) {
+    const { SERVER_DOMEN, SENDER_EMAIL } = process.env;
+    const createVerifyLink = `${SERVER_DOMEN}/auth/verify/${user.verificationToken}`;
+
+    await sgMail.send({
+      to: user.email,
+      from: SENDER_EMAIL,
+      subject: "Please verify your email",
+      html: `<a href=${createVerifyLink}>Click link to verify</a>`,
+    });
   }
 
   composeUserForResponse(user) {
