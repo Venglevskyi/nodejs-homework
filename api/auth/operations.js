@@ -58,6 +58,9 @@ class authOperations {
       if (!existingUser) {
         throw new UnauthorizedError("#");
       }
+      if (existingUser.verificationToken !== null) {
+        throw new NotFoundError("User not verified");
+      }
 
       const isPasswordCorrect = await this.compareHashPassword(
         password,
@@ -188,7 +191,18 @@ class authOperations {
       to: user.email,
       from: SENDER_EMAIL,
       subject: "Please verify your email",
-      html: `<a href=${createVerifyLink}>Click link to verify</a>`,
+      html: `<p style="text-align: center; font-size: 16px">Hello user</p>
+      <a href=${createVerifyLink} style="width: 150px;
+        height: 30px;
+        text-decoration: none;
+        padding-top: 9px;
+        color: #ffffff;
+        text-align: center;
+        line-height: 20px;
+        display: block;
+        margin: 20px auto;
+        font: normal 17px arial;
+        background-color: #3b2751"}>Click link to verify</a>`,
     });
   }
 
