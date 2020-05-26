@@ -3,7 +3,6 @@ const {
   Schema,
   Types: { ObjectId },
 } = mongoose;
-const uuid = require("uuid");
 
 const userSchema = new Schema({
   email: String,
@@ -14,7 +13,6 @@ const userSchema = new Schema({
     enum: ["free", "pro", "premium"],
     default: "free",
   },
-  verificationToken: String,
   token: String,
 });
 
@@ -23,11 +21,8 @@ userSchema.statics.findUserByEmail = findUserByEmail;
 userSchema.statics.getUserById = getUserById;
 userSchema.statics.updateUserById = updateUserById;
 userSchema.statics.updateUserParams = updateUserParams;
-userSchema.statics.findByVerificationToken = findByVerificationToken;
-userSchema.statics.userVerified = userVerified;
 
 async function createUser(userParams) {
-  userParams.verificationToken = uuid.v4();
   return this.create(userParams);
 }
 
@@ -59,17 +54,6 @@ async function updateUserParams(contactId, userParams) {
     contactId,
     { $set: { avatarURL: userParams } },
     { new: true }
-  );
-}
-
-async function findByVerificationToken(verificationToken) {
-  return this.findOne({ verificationToken });
-}
-
-async function userVerified(verificationToken) {
-  return this.updateOne(
-    { verificationToken },
-    { $set: { verificationToken: null } }
   );
 }
 

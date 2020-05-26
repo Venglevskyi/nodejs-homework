@@ -21,9 +21,5 @@ authRouter.post(
   authOperations.authorize,
   authOperations.logOut.bind(authOperations)
 );
-authRouter.get(
-  "/verify/:verificationToken",
-  authOperations.verifyUser.bind(authOperations)
-);
 
 module.exports = authRouter;
