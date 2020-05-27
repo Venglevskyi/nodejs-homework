@@ -41,7 +41,7 @@ class authOperations {
 
       const token = this.createToken(createdUser._id);
 
-      this.sendVerificationToken(createdUser);
+      await this.sendVerificationToken(createdUser);
 
       return res
         .status(201)
