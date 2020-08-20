@@ -25,7 +25,7 @@
   "dependencies": {
     "@hapi/joi": "^17.1.1",
     "@sendgrid/mail": "^7.1.1",
-    "bcrypt": "^4.0.1",
+    "bcrypt": "^5.0.0",
     "cartoon-avatar": "^1.0.2",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
